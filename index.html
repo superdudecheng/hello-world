@@ -151,6 +151,40 @@
   ul.clean li { margin-bottom: 6px; }
   .callout { border-left: 3px solid var(--accent-2); padding: 8px 14px; background: var(--panel-2);
     border-radius: 0 8px 8px 0; margin: 12px 0; font-size: .92rem; }
+
+  /* Passages */
+  .passage { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 15px 17px; margin-bottom: 13px; }
+  .passage .ptitle { font-weight: 700; display: flex; justify-content: space-between;
+    align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .passage .ptarget { color: var(--accent-2); font-size: .8rem; font-weight: 600; }
+  .passage .ptext { font-size: 1.2rem; line-height: 2; margin: 10px 0 6px; }
+  .passage .ppin { color: var(--muted); font-size: .92rem; line-height: 1.85; margin-bottom: 6px; display: none; }
+  .passage.show-pin .ppin { display: block; }
+  .passage .pmeta { color: var(--muted); font-size: .8rem; margin-bottom: 8px; }
+  .passage .pactions { display: flex; gap: 9px; flex-wrap: wrap; }
+  .passage .pactions a, .passage .pactions button {
+    font-size: .82rem; padding: 6px 13px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); text-decoration: none; cursor: pointer; font: inherit; }
+  .passage .pactions a:hover, .passage .pactions button:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Recorder */
+  .recorder { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .rec-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  button.rec { background: var(--accent); color: #fff; border: none; padding: 9px 18px;
+    border-radius: 999px; cursor: pointer; font-weight: 600; }
+  button.rec.recording { background: #c92e3a; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+  .rec-time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .95rem; }
+  .rec-hint { color: var(--muted); font-size: .82rem; }
+  audio { width: 100%; margin-top: 4px; }
+  .logentry .audioSlot { margin-top: 8px; }
+  .logentry .dl { display: inline-block; font-size: .8rem; color: var(--accent-2);
+    text-decoration: none; margin: 4px 0; }
+  .logentry .dl:hover { text-decoration: underline; }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration: .001ms !important; } }
+
   footer { text-align: center; color: var(--muted); font-size: .82rem; margin-top: 30px; }
 </style>
 </head>
@@ -173,6 +207,7 @@
     <button data-tab="tells">🎯 7 Accent Tells</button>
     <button data-tab="routine">🗓️ Weekly Routine</button>
     <button data-tab="drills">🗣️ Drills</button>
+    <button data-tab="passages">📖 朗读 Passages</button>
     <button data-tab="resources">🔗 Resources</button>
     <button data-tab="progress">📈 Progress Log</button>
   </nav>
@@ -251,6 +286,25 @@
     </div>
   </section>
 
+  <!-- PASSAGES -->
+  <section class="tab" id="passages">
+    <div class="card">
+      <h2>朗读 · Shadowing passages</h2>
+      <p class="lead">Play a native reading, then speak <em>along with it</em> — match tone, speed, and rhythm. Toggle pinyin when you need it.</p>
+      <div class="callout"><strong>How to shadow:</strong> ① Listen once. ② Play again and speak simultaneously, copying the melody. ③ Record yourself (Progress Log tab) and compare. Repeat until the gap closes.</div>
+    </div>
+    <div class="card">
+      <h2>绕口令 · Tongue twisters (targeted sounds)</h2>
+      <p class="lead">Short, public-domain drills — each one attacks a specific accent tell. Tap “Pinyin” to reveal, “Hear it” to find a native reading.</p>
+      <div id="twisters"></div>
+    </div>
+    <div class="card">
+      <h2>朗读篇章 · Classic recitation passages</h2>
+      <p class="lead">Public-domain essays used in Chinese recitation, for rhythm and flow. The full official PSC set of 60 is linked in Resources → “PSC passages”.</p>
+      <div id="essays"></div>
+    </div>
+  </section>
+
   <!-- RESOURCES -->
   <section class="tab" id="resources">
     <div class="card">
@@ -272,9 +326,17 @@
   <section class="tab" id="progress">
     <div class="card">
       <h2>Progress log</h2>
-      <p class="lead">Record a monthly baseline (read the same paragraph aloud, save the audio elsewhere) and note how you sound. Entries are saved on this device.</p>
+      <p class="lead">Record a monthly baseline — read the same passage aloud, keep the clip, and compare month to month. Everything stays on this device (audio in your browser, nothing uploaded).</p>
+      <div class="recorder">
+        <div class="rec-controls">
+          <button class="rec" id="recBtn">● Record baseline</button>
+          <span class="rec-time" id="recTime">0:00</span>
+        </div>
+        <div class="rec-hint" id="recHint">Read a passage aloud (try the 朗读 tab). Your clip attaches to the entry you save below.</div>
+        <div id="recPreview"></div>
+      </div>
       <input class="txt" id="logTitle" placeholder="Title (e.g. Baseline — Month 1)" style="margin-bottom:10px;">
-      <textarea id="logBody" rows="3" placeholder="How did it sound? Which tells improved? Link to your recording (Google Drive, Voice Memos, etc.)"></textarea>
+      <textarea id="logBody" rows="3" placeholder="How did it sound? Which tells improved (retroflex, tones, erhua…)?"></textarea>
       <button class="primary" id="addLog">Save entry</button>
       <div id="logList"></div>
     </div>
@@ -354,6 +416,66 @@ Object.entries(PAIRS).forEach(([id, arr]) => {
   });
 });
 
+/* ---------- Passages ---------- */
+const TWISTERS = [
+  { t:'平翘舌 · z/c/s vs zh/ch/sh',
+    zh:'四是四，十是十，十四是十四，四十是四十，四十四是四十四。',
+    pin:'sì shì sì, shí shì shí, shísì shì shísì, sìshí shì sìshí, sìshísì shì sìshísì.',
+    q:'四是四十是十 绕口令' },
+  { t:'翘舌 · zh / sh / r',
+    zh:'知道就说知道，不知道就说不知道，不要知道说不知道，也不要不知道说知道。',
+    pin:'zhīdào jiù shuō zhīdào, bù zhīdào jiù shuō bù zhīdào, búyào zhīdào shuō bù zhīdào, yě búyào bù zhīdào shuō zhīdào.',
+    q:'知道就说知道 绕口令' },
+  { t:'n / l',
+    zh:'刘奶奶买牛奶，牛奶奶卖牛奶，刘奶奶找牛奶奶买牛奶。',
+    pin:'liú nǎinai mǎi niúnǎi, niú nǎinai mài niúnǎi, liú nǎinai zhǎo niú nǎinai mǎi niúnǎi.',
+    q:'刘奶奶买牛奶 绕口令' },
+  { t:'前后鼻音 · -n / -ng',
+    zh:'红凤凰，黄凤凰，粉红凤凰花凤凰。',
+    pin:'hóng fènghuáng, huáng fènghuáng, fěnhóng fènghuáng huā fènghuáng.',
+    q:'红凤凰黄凤凰 绕口令' },
+];
+const ESSAYS = [
+  { title:'《匆匆》 — 朱自清',
+    meta:'1922 · public domain · a classic recitation piece on the passing of time',
+    zh:'燕子去了，有再来的时候；杨柳枯了，有再青的时候；桃花谢了，有再开的时候。但是，聪明的，你告诉我，我们的日子为什么一去不复返呢？',
+    q:'朱自清 匆匆 朗读' },
+  { title:'《春》 — 朱自清',
+    meta:'1933 · public domain · gentle, even rhythm — great for tone flow',
+    zh:'盼望着，盼望着，东风来了，春天的脚步近了。一切都像刚睡醒的样子，欣欣然张开了眼。山朗润起来了，水涨起来了，太阳的脸红起来了。',
+    q:'朱自清 春 朗读' },
+];
+function ytUrl(q){ return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q); }
+const twBox = document.getElementById('twisters');
+TWISTERS.forEach(x => {
+  const el = document.createElement('div'); el.className = 'passage';
+  el.innerHTML = `<div class="ptitle"><span>绕口令</span><span class="ptarget">${x.t}</span></div>
+    <div class="ptext">${x.zh}</div>
+    <div class="ppin">${x.pin}</div>
+    <div class="pactions">
+      <button class="togpin">Pinyin</button>
+      <a href="${ytUrl(x.q)}" target="_blank" rel="noopener">▶ Hear it</a>
+    </div>`;
+  twBox.appendChild(el);
+});
+twBox.addEventListener('click', e => {
+  if (!e.target.classList.contains('togpin')) return;
+  const p = e.target.closest('.passage'); p.classList.toggle('show-pin');
+  e.target.textContent = p.classList.contains('show-pin') ? 'Hide pinyin' : 'Pinyin';
+});
+const esBox = document.getElementById('essays');
+ESSAYS.forEach(x => {
+  const el = document.createElement('div'); el.className = 'passage';
+  el.innerHTML = `<div class="ptitle"><span>${x.title}</span></div>
+    <div class="pmeta">${x.meta}</div>
+    <div class="ptext">${x.zh}</div>
+    <div class="pactions">
+      <a href="${ytUrl(x.q)}" target="_blank" rel="noopener">▶ Hear it read</a>
+      <a href="https://www.plecoapp.com/" target="_blank" rel="noopener">Pinyin in Pleco</a>
+    </div>`;
+  esBox.appendChild(el);
+});
+
 /* ---------- Resources ---------- */
 const YT = [
   '普通话水平测试 朗读作品 60篇',
@@ -411,34 +533,116 @@ SITES.forEach(([t,u,tag,d]) => {
   siteBox.appendChild(a);
 });
 
-/* ---------- Progress log ---------- */
+/* ---------- Progress log + audio (IndexedDB) ---------- */
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+const DB = (() => {
+  let dbp;
+  function open(){
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      const r = indexedDB.open('mandarin-trainer', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('audio');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return dbp;
+  }
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction('audio', mode); const store = t.objectStore('audio');
+    const rq = fn(store); t.oncomplete = () => res(rq && rq.result); t.onerror = () => rej(t.error);
+  }));
+  return {
+    put: (k, blob) => tx('readwrite', s => s.put(blob, k)),
+    get: (k) => tx('readonly', s => s.get(k)),
+    del: (k) => tx('readwrite', s => s.delete(k)),
+  };
+})();
+
+/* Recorder */
+const REC_HINT = 'Read a passage aloud (try the 朗读 tab). Your clip attaches to the entry you save below.';
+const recBtn = document.getElementById('recBtn');
+const recTime = document.getElementById('recTime');
+const recHint = document.getElementById('recHint');
+const recPreview = document.getElementById('recPreview');
+let mediaRecorder = null, chunks = [], recTimer = null, recStart = 0, pendingBlob = null;
+
+function fmt(s){ return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+
+recBtn.addEventListener('click', async () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+    recHint.textContent = 'Recording isn’t supported in this browser. Try Chrome, Edge, or Safari.'; return;
+  }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch { recHint.textContent = 'Microphone blocked. Allow mic access in your browser to record.'; return; }
+  chunks = []; mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    stream.getTracks().forEach(t => t.stop());
+    clearInterval(recTimer);
+    recBtn.classList.remove('recording'); recBtn.textContent = '● Record baseline';
+    pendingBlob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+    recPreview.innerHTML = '';
+    const a = document.createElement('audio'); a.controls = true; a.src = URL.createObjectURL(pendingBlob);
+    recPreview.appendChild(a);
+    recHint.textContent = 'Recorded ✓ — save an entry below to keep it, or record again to replace.';
+  };
+  mediaRecorder.start();
+  recStart = performance.now();
+  recBtn.classList.add('recording'); recBtn.textContent = '■ Stop';
+  recTime.textContent = '0:00';
+  recTimer = setInterval(() => { recTime.textContent = fmt(Math.floor((performance.now() - recStart) / 1000)); }, 250);
+});
+
 function renderLog(){
   const list = store.get('log', []);
   const box = document.getElementById('logList'); box.innerHTML = '';
   list.forEach((entry, i) => {
-    const el = document.createElement('div'); el.className='logentry';
+    const el = document.createElement('div'); el.className = 'logentry';
     el.innerHTML = `<button class="del" data-i="${i}">✕</button>
-      <div class="meta">${entry.date}</div>
-      <strong>${escapeHtml(entry.title||'(untitled)')}</strong>
-      <div>${escapeHtml(entry.body||'')}</div>`;
+      <div class="meta">${escapeHtml(entry.date)}</div>
+      <strong>${escapeHtml(entry.title || '(untitled)')}</strong>
+      <div>${escapeHtml(entry.body || '')}</div>
+      <div class="audioSlot"></div>`;
     box.appendChild(el);
+    if (entry.audioId) {
+      DB.get(entry.audioId).then(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const slot = el.querySelector('.audioSlot');
+        slot.innerHTML = `<a class="dl" href="${url}" download="baseline-${entry.audioId}.webm">⬇ Download recording</a>`;
+        const a = document.createElement('audio'); a.controls = true; a.src = url;
+        slot.appendChild(a);
+      }).catch(() => {});
+    }
   });
 }
-function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
-document.getElementById('addLog').addEventListener('click', () => {
+
+document.getElementById('addLog').addEventListener('click', async () => {
   const title = document.getElementById('logTitle').value.trim();
   const body = document.getElementById('logBody').value.trim();
-  if (!title && !body) return;
-  const list = store.get('log', []);
-  list.unshift({ title, body, date: new Date().toLocaleDateString() });
-  store.set('log', list);
-  document.getElementById('logTitle').value=''; document.getElementById('logBody').value='';
+  if (!title && !body && !pendingBlob) return;
+  const entry = { title, body, date: new Date().toLocaleDateString() };
+  if (pendingBlob) {
+    const id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    try { await DB.put(id, pendingBlob); entry.audioId = id; }
+    catch { recHint.textContent = 'Could not save the audio, but your notes were kept.'; }
+  }
+  const list = store.get('log', []); list.unshift(entry); store.set('log', list);
+  document.getElementById('logTitle').value = ''; document.getElementById('logBody').value = '';
+  pendingBlob = null; recPreview.innerHTML = ''; recTime.textContent = '0:00'; recHint.textContent = REC_HINT;
   renderLog();
 });
-document.getElementById('logList').addEventListener('click', e => {
+
+document.getElementById('logList').addEventListener('click', async e => {
   if (!e.target.classList.contains('del')) return;
-  const list = store.get('log', []); list.splice(+e.target.dataset.i, 1);
-  store.set('log', list); renderLog();
+  const list = store.get('log', []);
+  const [removed] = list.splice(+e.target.dataset.i, 1);
+  store.set('log', list);
+  if (removed && removed.audioId) { try { await DB.del(removed.audioId); } catch {} }
+  renderLog();
 });
 
 /* ---------- init ---------- */
