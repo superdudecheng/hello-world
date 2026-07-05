@@ -1,0 +1,536 @@
+<title>The Expert Presenter — Dashboard</title>
+<style>
+  /* ============ TOKENS ============ */
+  :root{
+    --ground:#F7F1E7; --panel:#FEFBF5; --panel-2:#F1E8D9; --inset:#EFE6D5;
+    --ink:#241C24; --ink-soft:#6A5F6B; --ink-faint:#9C8F9B;
+    --line:#E4D9C7; --line-strong:#D8CAB2;
+    --accent:#B5730E; --amber:#E7A937; --accent-ink:#3A2606;
+    --good:#2F7D5B;
+    --shadow:0 1px 2px rgba(60,40,20,.05), 0 8px 24px rgba(60,40,20,.06);
+    --shadow-lift:0 2px 6px rgba(60,40,20,.08), 0 18px 40px rgba(60,40,20,.12);
+    --ring-track:#E7DCC8;
+    --glow:transparent;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --ground:#16121C; --panel:#1F1929; --panel-2:#271F33; --inset:#181320;
+      --ink:#F0E7D8; --ink-soft:#A99FB2; --ink-faint:#786E82;
+      --line:#332A42; --line-strong:#42374F;
+      --accent:#F0B845; --amber:#F0B845; --accent-ink:#2A1D06;
+      --good:#5FBF8E;
+      --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+      --shadow-lift:0 2px 8px rgba(0,0,0,.4), 0 22px 50px rgba(0,0,0,.5);
+      --ring-track:#332A42;
+      --glow:radial-gradient(60% 80% at 50% -10%, rgba(240,184,69,.10), transparent 70%);
+    }
+  }
+  :root[data-theme="dark"]{
+    --ground:#16121C; --panel:#1F1929; --panel-2:#271F33; --inset:#181320;
+    --ink:#F0E7D8; --ink-soft:#A99FB2; --ink-faint:#786E82;
+    --line:#332A42; --line-strong:#42374F;
+    --accent:#F0B845; --amber:#F0B845; --accent-ink:#2A1D06;
+    --good:#5FBF8E;
+    --shadow:0 1px 2px rgba(0,0,0,.3), 0 10px 30px rgba(0,0,0,.35);
+    --shadow-lift:0 2px 8px rgba(0,0,0,.4), 0 22px 50px rgba(0,0,0,.5);
+    --ring-track:#332A42;
+    --glow:radial-gradient(60% 80% at 50% -10%, rgba(240,184,69,.10), transparent 70%);
+  }
+  :root[data-theme="light"]{
+    --ground:#F7F1E7; --panel:#FEFBF5; --panel-2:#F1E8D9; --inset:#EFE6D5;
+    --ink:#241C24; --ink-soft:#6A5F6B; --ink-faint:#9C8F9B;
+    --line:#E4D9C7; --line-strong:#D8CAB2;
+    --accent:#B5730E; --amber:#E7A937; --accent-ink:#3A2606;
+    --good:#2F7D5B;
+    --shadow:0 1px 2px rgba(60,40,20,.05), 0 8px 24px rgba(60,40,20,.06);
+    --shadow-lift:0 2px 6px rgba(60,40,20,.08), 0 18px 40px rgba(60,40,20,.12);
+    --ring-track:#E7DCC8;
+    --glow:transparent;
+  }
+
+  *{box-sizing:border-box}
+  html{-webkit-text-size-adjust:100%}
+  body{margin:0}
+  .app{
+    min-height:100vh; background:var(--ground); color:var(--ink);
+    font-family:system-ui,-apple-system,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;
+    line-height:1.55; background-image:var(--glow); background-repeat:no-repeat;
+  }
+  .serif{font-family:"Hoefler Text","Didot","Bodoni 72",Garamond,"Times New Roman",serif}
+  .label{font-size:.7rem; letter-spacing:.16em; text-transform:uppercase; color:var(--ink-faint); font-weight:600}
+  .num{font-variant-numeric:tabular-nums}
+  a{color:inherit}
+  .wrap{max-width:1120px; margin:0 auto; padding:0 24px}
+
+  /* ============ TOP BAR ============ */
+  header.bar{
+    position:sticky; top:0; z-index:20; backdrop-filter:saturate(1.4) blur(10px);
+    background:color-mix(in srgb, var(--ground) 82%, transparent);
+    border-bottom:1px solid var(--line);
+  }
+  .bar-in{display:flex; align-items:center; gap:16px; height:60px}
+  .brand{display:flex; align-items:center; gap:11px; font-weight:600; letter-spacing:.01em}
+  .brand .dot{width:11px; height:11px; border-radius:50%; background:var(--amber);
+    box-shadow:0 0 0 4px color-mix(in srgb, var(--amber) 22%, transparent)}
+  .brand b{font-weight:600}
+  .bar-spacer{flex:1}
+  .bar-prog{display:flex; align-items:center; gap:9px; font-size:.82rem; color:var(--ink-soft)}
+  .bar-prog .mini{width:66px; height:6px; border-radius:99px; background:var(--ring-track); overflow:hidden}
+  .bar-prog .mini i{display:block; height:100%; width:0; background:linear-gradient(90deg,var(--amber),var(--accent)); transition:width .5s ease}
+  .iconbtn{
+    appearance:none; border:1px solid var(--line-strong); background:var(--panel); color:var(--ink);
+    width:38px; height:38px; border-radius:10px; cursor:pointer; font-size:1rem; display:grid; place-items:center;
+    transition:transform .15s ease, background .2s ease;
+  }
+  .iconbtn:hover{transform:translateY(-1px); background:var(--panel-2)}
+  .iconbtn:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+
+  /* ============ HERO ============ */
+  .hero{padding:56px 0 30px; display:grid; grid-template-columns:1.35fr .9fr; gap:44px; align-items:center}
+  .hero h1{font-size:clamp(2.4rem,5.2vw,3.9rem); line-height:1.02; margin:.35rem 0 .5rem; font-weight:600; letter-spacing:-.01em; text-wrap:balance}
+  .hero h1 em{font-style:italic; color:var(--accent)}
+  .hero p.lede{font-size:1.08rem; color:var(--ink-soft); max-width:46ch; margin:.2rem 0 1.4rem}
+  .cta-row{display:flex; flex-wrap:wrap; gap:12px}
+  .btn{
+    display:inline-flex; align-items:center; gap:9px; padding:12px 20px; border-radius:12px; cursor:pointer;
+    font-size:.95rem; font-weight:600; text-decoration:none; border:1px solid transparent; transition:transform .15s ease, box-shadow .2s ease;
+  }
+  .btn.primary{background:linear-gradient(180deg,var(--amber),var(--accent)); color:var(--accent-ink); box-shadow:var(--shadow)}
+  .btn.ghost{background:var(--panel); border-color:var(--line-strong); color:var(--ink)}
+  .btn:hover{transform:translateY(-2px); box-shadow:var(--shadow-lift)}
+  .btn:focus-visible{outline:2px solid var(--amber); outline-offset:2px}
+
+  /* progress card */
+  .prog-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:20px; padding:26px 26px 22px;
+    box-shadow:var(--shadow); text-align:center;
+  }
+  .ring-wrap{position:relative; width:180px; height:180px; margin:2px auto 6px}
+  .ring-wrap svg{transform:rotate(-90deg)}
+  .ring-num{position:absolute; inset:0; display:grid; place-content:center; line-height:1}
+  .ring-num b{font-size:2.7rem; font-weight:600; letter-spacing:-.02em}
+  .ring-num span{display:block; font-size:.72rem; letter-spacing:.14em; text-transform:uppercase; color:var(--ink-faint); margin-top:5px}
+  .stat-row{display:flex; gap:10px; margin-top:14px}
+  .stat{flex:1; background:var(--panel-2); border:1px solid var(--line); border-radius:12px; padding:10px 8px}
+  .stat b{font-size:1.25rem; font-weight:600}
+  .stat small{display:block; font-size:.68rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); margin-top:2px}
+  .reset{margin-top:14px; background:none; border:none; color:var(--ink-faint); font-size:.76rem; cursor:pointer; text-decoration:underline; text-underline-offset:3px}
+  .reset:hover{color:var(--accent)}
+
+  /* ============ SECTIONS ============ */
+  section{padding:34px 0 8px; scroll-margin-top:76px}
+  .sec-head{display:flex; align-items:baseline; gap:14px; margin-bottom:20px; flex-wrap:wrap}
+  .sec-head h2{font-size:1.7rem; font-weight:600; margin:0; letter-spacing:-.01em}
+  .sec-head .kicker{color:var(--accent)}
+  .sec-head p{margin:0; color:var(--ink-soft); font-size:.95rem; flex:1; min-width:220px}
+
+  /* module grid */
+  .grid{display:grid; grid-template-columns:repeat(3,1fr); gap:16px}
+  .card{
+    position:relative; background:var(--panel); border:1px solid var(--line); border-radius:16px; padding:20px 20px 18px;
+    box-shadow:var(--shadow); transition:transform .16s ease, box-shadow .2s ease, border-color .2s ease; display:flex; flex-direction:column; gap:8px;
+  }
+  .card:hover{transform:translateY(-3px); box-shadow:var(--shadow-lift); border-color:var(--line-strong)}
+  .card .idx{font-family:"Hoefler Text",Georgia,serif; font-size:.95rem; color:var(--accent); font-weight:600}
+  .card h3{margin:0; font-size:1.08rem; font-weight:600; letter-spacing:-.005em; padding-right:34px}
+  .card p{margin:0; font-size:.88rem; color:var(--ink-soft); flex:1}
+  .card .go{font-size:.82rem; font-weight:600; color:var(--accent); text-decoration:none; margin-top:4px; display:inline-flex; align-items:center; gap:5px}
+  .card .go:hover{gap:9px}
+  /* checkbox */
+  .chk{position:absolute; top:16px; right:16px}
+  .chk input{position:absolute; opacity:0; width:26px; height:26px; margin:0; cursor:pointer}
+  .chk .box{width:26px; height:26px; border-radius:8px; border:1.5px solid var(--line-strong); background:var(--inset); display:grid; place-items:center; transition:all .18s ease}
+  .chk .box svg{width:15px; height:15px; opacity:0; transform:scale(.5); transition:all .18s ease; stroke:var(--accent-ink)}
+  .chk input:checked + .box{background:linear-gradient(180deg,var(--amber),var(--accent)); border-color:transparent}
+  .chk input:checked + .box svg{opacity:1; transform:scale(1)}
+  .chk input:focus-visible + .box{outline:2px solid var(--amber); outline-offset:2px}
+  .card.done{border-color:color-mix(in srgb,var(--amber) 45%, var(--line))}
+  .card.done h3{color:var(--ink)}
+
+  /* timeline */
+  .phase{margin-bottom:22px}
+  .phase-top{display:flex; align-items:center; gap:12px; margin-bottom:12px}
+  .pill{font-size:.68rem; letter-spacing:.12em; text-transform:uppercase; font-weight:700; padding:4px 10px; border-radius:99px; background:color-mix(in srgb,var(--amber) 16%, var(--panel)); color:var(--accent); border:1px solid color-mix(in srgb,var(--amber) 30%, transparent)}
+  .phase-top h4{margin:0; font-size:1.02rem; font-weight:600}
+  .phase-top .goal{color:var(--ink-faint); font-size:.85rem; font-style:italic}
+  .weeks{display:grid; grid-template-columns:repeat(3,1fr); gap:12px}
+  .week{
+    display:flex; gap:12px; align-items:flex-start; background:var(--panel); border:1px solid var(--line);
+    border-radius:13px; padding:13px 14px; box-shadow:var(--shadow); transition:border-color .2s ease;
+  }
+  .week label.tick{position:relative; flex:none; cursor:pointer; margin-top:1px}
+  .week label.tick input{position:absolute; opacity:0; width:22px; height:22px; margin:0; cursor:pointer}
+  .week label.tick .b{width:22px; height:22px; border-radius:50%; border:1.5px solid var(--line-strong); background:var(--inset); display:grid; place-items:center; transition:all .18s ease}
+  .week label.tick .b svg{width:12px;height:12px;opacity:0;transform:scale(.5);transition:all .18s ease; stroke:var(--accent-ink)}
+  .week label.tick input:checked + .b{background:linear-gradient(180deg,var(--amber),var(--accent)); border-color:transparent}
+  .week label.tick input:checked + .b svg{opacity:1; transform:scale(1)}
+  .week label.tick input:focus-visible + .b{outline:2px solid var(--amber); outline-offset:2px}
+  .week .wk{font-size:.7rem; letter-spacing:.1em; text-transform:uppercase; color:var(--ink-faint); font-weight:700}
+  .week .wt{font-size:.9rem; font-weight:600; line-height:1.3; margin-top:1px}
+  .week.done{border-color:color-mix(in srgb,var(--amber) 45%, var(--line))}
+
+  /* videos */
+  .vid-group{margin-bottom:26px}
+  .vid-group > .label{margin-bottom:12px; display:block}
+  .vids{display:grid; grid-template-columns:repeat(2,1fr); gap:12px}
+  .vid{
+    display:flex; gap:14px; align-items:center; text-decoration:none; background:var(--panel); border:1px solid var(--line);
+    border-radius:14px; padding:14px 16px; box-shadow:var(--shadow); transition:transform .16s ease, box-shadow .2s ease, border-color .2s ease;
+  }
+  .vid:hover{transform:translateY(-2px); box-shadow:var(--shadow-lift); border-color:var(--line-strong)}
+  .vid .play{
+    flex:none; width:42px; height:42px; border-radius:11px; display:grid; place-items:center;
+    background:color-mix(in srgb,var(--amber) 16%, var(--panel-2)); border:1px solid color-mix(in srgb,var(--amber) 26%, transparent);
+  }
+  .vid .play svg{width:16px; height:16px; fill:var(--accent)}
+  .vid .meta{min-width:0}
+  .vid .t{font-size:.92rem; font-weight:600; line-height:1.25}
+  .vid .s{font-size:.78rem; color:var(--ink-soft); margin-top:2px}
+  .vid .ext{margin-left:auto; color:var(--ink-faint); font-size:.9rem; flex:none}
+
+  /* toolkit */
+  .tools{display:grid; grid-template-columns:repeat(4,1fr); gap:14px}
+  .tool{
+    text-decoration:none; background:var(--panel); border:1px solid var(--line); border-radius:15px; padding:20px 18px;
+    box-shadow:var(--shadow); transition:transform .16s ease, box-shadow .2s ease, border-color .2s ease; display:block;
+  }
+  .tool:hover{transform:translateY(-3px); box-shadow:var(--shadow-lift); border-color:var(--line-strong)}
+  .tool .ic{font-size:1.5rem; margin-bottom:8px}
+  .tool h3{margin:0 0 4px; font-size:1rem; font-weight:600}
+  .tool p{margin:0; font-size:.83rem; color:var(--ink-soft)}
+
+  /* banner / one rule */
+  .banner{
+    margin:38px 0 8px; padding:30px 34px; border-radius:20px; text-align:center;
+    background:linear-gradient(180deg, color-mix(in srgb,var(--amber) 12%, var(--panel)), var(--panel));
+    border:1px solid color-mix(in srgb,var(--amber) 30%, var(--line));
+  }
+  .banner .label{color:var(--accent)}
+  .banner blockquote{margin:10px auto 0; max-width:30ch; font-size:1.5rem; font-weight:600; line-height:1.25; letter-spacing:-.01em}
+
+  footer{padding:40px 0 60px; margin-top:20px; border-top:1px solid var(--line); color:var(--ink-soft); font-size:.86rem}
+  footer a{color:var(--accent); text-decoration:none}
+  footer a:hover{text-decoration:underline}
+  .foot-grid{display:flex; gap:36px; flex-wrap:wrap; justify-content:space-between}
+  footer b{color:var(--ink); font-weight:600}
+
+  .toast{
+    position:fixed; left:50%; bottom:26px; transform:translateX(-50%) translateY(20px); opacity:0;
+    background:var(--ink); color:var(--ground); padding:11px 18px; border-radius:99px; font-size:.85rem; font-weight:600;
+    box-shadow:var(--shadow-lift); transition:all .3s ease; pointer-events:none; z-index:40;
+  }
+  .toast.show{opacity:1; transform:translateX(-50%) translateY(0)}
+
+  @media (max-width:920px){
+    .hero{grid-template-columns:1fr; gap:30px}
+    .grid{grid-template-columns:repeat(2,1fr)}
+    .vids{grid-template-columns:1fr}
+    .tools{grid-template-columns:repeat(2,1fr)}
+    .weeks{grid-template-columns:1fr}
+  }
+  @media (max-width:560px){
+    .grid{grid-template-columns:1fr}
+    .tools{grid-template-columns:1fr}
+    .bar-prog .txt{display:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    *{transition:none !important}
+  }
+</style>
+
+<div class="app">
+  <header class="bar">
+    <div class="wrap bar-in">
+      <div class="brand"><span class="dot"></span><b class="serif">The Expert Presenter</b></div>
+      <div class="bar-spacer"></div>
+      <div class="bar-prog">
+        <span class="txt num" id="barPct">0% complete</span>
+        <span class="mini"><i id="barFill"></i></span>
+      </div>
+      <button class="iconbtn" id="themeBtn" title="Toggle light / dark" aria-label="Toggle theme">◑</button>
+    </div>
+  </header>
+
+  <main class="wrap">
+    <!-- HERO -->
+    <section class="hero" style="padding-top:56px">
+      <div>
+        <span class="label">A self-guided program in public speaking &amp; oratory</span>
+        <h1 class="serif">Become a speaker people <em>lean in</em> to hear.</h1>
+        <p class="lede">Nine skills, twelve weeks, a library of the best talks ever given, and the drills to practise them. You learn to speak by speaking — this dashboard is your rehearsal room.</p>
+        <div class="cta-row">
+          <a class="btn primary" href="#plan">▶ Start the 12-week plan</a>
+          <a class="btn ghost" href="#videos">Watch the resources</a>
+        </div>
+      </div>
+      <aside class="prog-card">
+        <div class="label" style="margin-bottom:6px">Your progress</div>
+        <div class="ring-wrap">
+          <svg width="180" height="180" viewBox="0 0 180 180">
+            <circle cx="90" cy="90" r="76" fill="none" stroke="var(--ring-track)" stroke-width="14"/>
+            <circle id="ring" cx="90" cy="90" r="76" fill="none" stroke="url(#g)" stroke-width="14"
+              stroke-linecap="round" stroke-dasharray="477.5" stroke-dashoffset="477.5"/>
+            <defs><linearGradient id="g" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0" stop-color="var(--amber)"/><stop offset="1" stop-color="var(--accent)"/>
+            </linearGradient></defs>
+          </svg>
+          <div class="ring-num"><b class="num" id="ringPct">0%</b><span>of the program</span></div>
+        </div>
+        <div class="stat-row">
+          <div class="stat"><b class="num" id="modStat">0/9</b><small>Modules</small></div>
+          <div class="stat"><b class="num" id="wkStat">0/12</b><small>Weeks</small></div>
+        </div>
+        <button class="reset" id="resetBtn">Reset progress</button>
+      </aside>
+    </section>
+
+    <!-- CURRICULUM -->
+    <section id="curriculum">
+      <div class="sec-head">
+        <h2 class="serif"><span class="kicker">The nine skills.</span> The curriculum.</h2>
+        <p>Nine self-contained modules, each a core skill with hands-on exercises. Tick one off when you've read it and done the drills.</p>
+      </div>
+      <div class="grid" id="modGrid"></div>
+    </section>
+
+    <!-- 12 WEEK PLAN -->
+    <section id="plan">
+      <div class="sec-head">
+        <h2 class="serif"><span class="kicker">Twelve weeks.</span> One real talk.</h2>
+        <p>The recommended path — about 3–4 hours a week, building toward a talk you deliver in Week 12. Schedule that talk <em>now</em>; a deadline is the best teacher.</p>
+      </div>
+      <div id="timeline"></div>
+    </section>
+
+    <!-- VIDEOS -->
+    <section id="videos">
+      <div class="sec-head">
+        <h2 class="serif"><span class="kicker">The library.</span> Watch the masters.</h2>
+        <p>Watching great speakers — and people who <em>teach</em> speaking — is the fastest way to build instinct. Watch actively: note the hook, the structure, and one thing to steal.</p>
+      </div>
+      <div id="videoWrap"></div>
+    </section>
+
+    <!-- TOOLKIT -->
+    <section id="toolkit">
+      <div class="sec-head">
+        <h2 class="serif"><span class="kicker">The practice.</span> Your toolkit.</h2>
+        <p>Improvement happens on your feet. These are the working materials — printable, fill-in-able, reusable.</p>
+      </div>
+      <div class="tools" id="tools"></div>
+    </section>
+
+    <div class="banner">
+      <span class="label">The one rule that matters most</span>
+      <blockquote class="serif">You learn to speak by speaking, not by reading about speaking.</blockquote>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap foot-grid">
+      <div style="max-width:40ch">
+        <b>The Expert Presenter Project</b><br>
+        A self-guided program to develop skills as a presenter and orator. Your progress is saved in this browser only.
+      </div>
+      <div>
+        <div class="label" style="margin-bottom:8px">Open the source</div>
+        <a id="repoLink" href="#">Full project on GitHub →</a><br>
+        <a id="readmeLink" href="#">Read the written guide →</a>
+      </div>
+    </div>
+  </footer>
+
+  <div class="toast" id="toast">Saved</div>
+</div>
+
+<script>
+(function(){
+  "use strict";
+  var BRANCH = "claude/presenter-skills-project-k6yys4";
+  var BASE = "https://github.com/superdudecheng/hello-world/blob/" + BRANCH + "/presenter-skills/";
+  var TREE = "https://github.com/superdudecheng/hello-world/tree/" + BRANCH + "/presenter-skills";
+
+  var MODULES = [
+    ["00","Foundations & mindset","Reframe speaking as service, not performance — and kill the myth that great speakers are born, not made.","curriculum/00-foundations.md"],
+    ["01","Content & structure","Find the one core message, steal a proven structure, and nail a hook and a close that land.","curriculum/01-content-and-structure.md"],
+    ["02","Voice & vocal delivery","The six levers — pace, pause, pitch, volume, timbre, articulation — plus breath and killing filler words.","curriculum/02-voice-and-delivery.md"],
+    ["03","Body language & presence","Posture, purposeful gesture, eye contact and movement. Find and remove your nervous tells on camera.","curriculum/03-body-language.md"],
+    ["04","Storytelling","The single highest-leverage skill: conflict, a turning point, and 'show, don't tell'.","curriculum/04-storytelling.md"],
+    ["05","Slides & visual aids","You are the presentation; slides only support you. One idea per slide, six words, never read them.","curriculum/05-visuals-and-slides.md"],
+    ["06","Reading the room & Q&A","Read the signals, adapt live, and handle hard, hostile, and surprise questions with composure.","curriculum/06-audience-and-qa.md"],
+    ["07","Nerves & performance mindset","Channel the energy — reframe fear as excitement — and run a pre-talk routine that steadies you.","curriculum/07-nerves-and-mindset.md"],
+    ["08","Advanced rhetoric & persuasion","Ethos, pathos, logos and the classical devices — anaphora, the rule of three, the callback.","curriculum/08-advanced-rhetoric.md"]
+  ];
+
+  var PHASES = [
+    ["Phase 1","Foundations","Get comfortable on your feet, saying something clear.",[
+      ["1","Mindset & baseline — record your 'before' talk"],
+      ["2","Content & structure — one message, three points"],
+      ["3","Voice & delivery — pace, pause, pitch"]
+    ]],
+    ["Phase 2","Delivery & presence","Make your body and voice reinforce the message.",[
+      ["4","Body language — watch yourself on mute"],
+      ["5","Storytelling I — find five true stories"],
+      ["6","Storytelling II — tell one really well"]
+    ]],
+    ["Phase 3","Craft & polish","Add visuals, handle a room, sharpen persuasion.",[
+      ["7","Slides — the 5-slide, 6-word challenge"],
+      ["8","Reading the room & Q&A — the hot seat"],
+      ["9","Rhetoric — rewrite your open & close"]
+    ]],
+    ["Phase 4","Performance","Deliver the real thing.",[
+      ["10","Build the real talk — first full run"],
+      ["11","Rehearse to performance level (×3+)"],
+      ["12","Deliver it 🎉 — then review vs. baseline"]
+    ]]
+  ];
+
+  var VIDEOS = [
+    ["Learn the craft — teachers who explain how it's done", [
+      ["How to speak so that people want to listen","Julian Treasure · TED — the best 10-min primer on voice","https://www.ted.com/talks/julian_treasure_how_to_speak_so_that_people_want_to_listen"],
+      ["The secret structure of great talks","Nancy Duarte · TEDxEast — the 'sparkline' behind great speeches","https://www.ted.com/talks/nancy_duarte_the_secret_structure_of_great_talks"],
+      ["How to sound smart in your TEDx Talk","Will Stephen · TEDxNewYork — delivery vs. content, brilliantly","https://www.youtube.com/results?search_query=Will+Stephen+How+to+sound+smart+in+your+TEDx+Talk"],
+      ["Think Fast, Talk Smart","Matt Abrahams · Stanford GSB — spontaneous speaking & Q&A","https://www.youtube.com/results?search_query=Think+Fast+Talk+Smart+Matt+Abrahams+Stanford"]
+    ]],
+    ["Study the masters — watch, then dissect", [
+      ["Do schools kill creativity?","Sir Ken Robinson · TED — humour, timing, warmth","https://www.ted.com/talks/sir_ken_robinson_do_schools_kill_creativity"],
+      ["The power of vulnerability","Brené Brown · TED — storytelling & emotional honesty","https://www.ted.com/talks/brene_brown_the_power_of_vulnerability"],
+      ["The danger of a single story","Chimamanda Ngozi Adichie · TED — narrative & moral clarity","https://www.ted.com/talks/chimamanda_ngozi_adichie_the_danger_of_a_single_story"],
+      ["The best stats you've ever seen","Hans Rosling · TED — making data thrilling","https://www.ted.com/talks/hans_rosling_the_best_stats_you_ve_ever_seen"],
+      ["Stanford Commencement Address (2005)","Steve Jobs — three stories, one theme, the rule of three","https://www.youtube.com/watch?v=UF8uR6Z6KLc"],
+      ["'I Have a Dream' (full speech)","Martin Luther King Jr. — anaphora, rhythm, and the build","https://www.youtube.com/results?search_query=MLK+I+Have+a+Dream+full+speech"]
+    ]],
+    ["Free courses & channels", [
+      ["Introduction to Public Speaking","Univ. of Washington (Dr. Matt McGarrity) · Coursera — audit free","https://www.youtube.com/results?search_query=Coursera+Introduction+to+Public+Speaking+McGarrity"],
+      ["Toastmasters International","Official channel — tutorials & World Championship speeches","https://www.youtube.com/@Toastmasters"],
+      ["TED-Ed","Short animated lessons on rhetoric & public speaking","https://www.youtube.com/@TEDEd"],
+      ["The Moth","Pure storytelling craft — one person, one microphone","https://themoth.org"]
+    ]]
+  ];
+
+  var TOOLS = [
+    ["🏋️","Daily drills","Vocal warm-ups, the filler-word killer, and 'Impromptu 60' — ten minutes a day.","practice/drills.md"],
+    ["📝","Speech templates","Fill-in-the-blank scaffolds for seven kinds of talk, plus a rehearsal checklist.","practice/speech-templates.md"],
+    ["📋","Self-assessment rubric","Score any recorded talk across 26 criteria — and give partners specific feedback.","practice/self-assessment-rubric.md"],
+    ["📈","Progress tracker","A training log: baseline vs. final, weekly reviews, and talks given.","practice/progress-tracker.md"]
+  ];
+
+  var CHECK = '<svg viewBox="0 0 24 24" fill="none" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
+  var PLAY = '<svg viewBox="0 0 24 24"><path d="M7 5v14l11-7z"/></svg>';
+  var TOTAL = MODULES.length + 12;
+
+  // ---- state ----
+  var KEY = "presenterDash.v1";
+  var state = load();
+  function load(){ try{ return JSON.parse(localStorage.getItem(KEY)) || {}; }catch(e){ return {}; } }
+  function save(){ try{ localStorage.setItem(KEY, JSON.stringify(state)); }catch(e){} }
+
+  function esc(s){ return String(s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c];}); }
+
+  // ---- render modules ----
+  var modGrid = document.getElementById("modGrid");
+  modGrid.innerHTML = MODULES.map(function(m){
+    var id = "m"+m[0], on = !!state[id];
+    return '<article class="card'+(on?' done':'')+'" data-card="'+id+'">'+
+      '<label class="chk"><input type="checkbox" data-id="'+id+'" aria-label="Mark '+esc(m[1])+' complete"'+(on?' checked':'')+'>'+
+        '<span class="box">'+CHECK+'</span></label>'+
+      '<div class="idx">Module '+m[0]+'</div>'+
+      '<h3>'+esc(m[1])+'</h3>'+
+      '<p>'+esc(m[2])+'</p>'+
+      '<a class="go" href="'+BASE+m[3]+'" target="_blank" rel="noopener">Open module →</a>'+
+    '</article>';
+  }).join("");
+
+  // ---- render timeline ----
+  document.getElementById("timeline").innerHTML = PHASES.map(function(p){
+    var weeks = p[3].map(function(w){
+      var id = "w"+w[0], on = !!state[id];
+      return '<div class="week'+(on?' done':'')+'" data-card="'+id+'">'+
+        '<label class="tick"><input type="checkbox" data-id="'+id+'" aria-label="Mark week '+w[0]+' complete"'+(on?' checked':'')+'>'+
+          '<span class="b">'+CHECK+'</span></label>'+
+        '<div><div class="wk">Week '+w[0]+'</div><div class="wt">'+esc(w[1])+'</div></div>'+
+      '</div>';
+    }).join("");
+    return '<div class="phase"><div class="phase-top"><span class="pill">'+esc(p[0])+'</span>'+
+      '<h4>'+esc(p[1])+'</h4><span class="goal">'+esc(p[2])+'</span></div>'+
+      '<div class="weeks">'+weeks+'</div></div>';
+  }).join("");
+
+  // ---- render videos ----
+  document.getElementById("videoWrap").innerHTML = VIDEOS.map(function(g){
+    var items = g[1].map(function(v){
+      return '<a class="vid" href="'+v[2]+'" target="_blank" rel="noopener">'+
+        '<span class="play">'+PLAY+'</span>'+
+        '<span class="meta"><span class="t">'+esc(v[0])+'</span><span class="s">'+esc(v[1])+'</span></span>'+
+        '<span class="ext">↗</span></a>';
+    }).join("");
+    return '<div class="vid-group"><span class="label">'+esc(g[0])+'</span><div class="vids">'+items+'</div></div>';
+  }).join("");
+
+  // ---- render tools ----
+  document.getElementById("tools").innerHTML = TOOLS.map(function(t){
+    return '<a class="tool" href="'+BASE+t[3]+'" target="_blank" rel="noopener">'+
+      '<div class="ic">'+t[0]+'</div><h3>'+esc(t[1])+'</h3><p>'+esc(t[2])+'</p></a>';
+  }).join("");
+
+  document.getElementById("repoLink").href = TREE;
+  document.getElementById("readmeLink").href = BASE + "README.md";
+
+  // ---- progress ----
+  var ring = document.getElementById("ring");
+  var CIRC = 2 * Math.PI * 76;
+  ring.setAttribute("stroke-dasharray", CIRC.toFixed(1));
+  function countModules(){ var n=0; MODULES.forEach(function(m){ if(state["m"+m[0]]) n++; }); return n; }
+  function countWeeks(){ var n=0; for(var i=1;i<=12;i++){ if(state["w"+i]) n++; } return n; }
+  function update(){
+    var mods=countModules(), wks=countWeeks(), done=mods+wks;
+    var pct = Math.round(done/TOTAL*100);
+    ring.setAttribute("stroke-dashoffset", (CIRC*(1-done/TOTAL)).toFixed(1));
+    document.getElementById("ringPct").textContent = pct+"%";
+    document.getElementById("modStat").textContent = mods+"/9";
+    document.getElementById("wkStat").textContent = wks+"/12";
+    document.getElementById("barPct").textContent = pct+"% complete";
+    document.getElementById("barFill").style.width = pct+"%";
+  }
+  update();
+
+  // ---- toast ----
+  var toast = document.getElementById("toast"), tt;
+  function ping(msg){ toast.textContent=msg; toast.classList.add("show"); clearTimeout(tt); tt=setTimeout(function(){toast.classList.remove("show");},1400); }
+
+  // ---- interactions ----
+  document.addEventListener("change", function(e){
+    var box = e.target.closest("input[data-id]");
+    if(!box) return;
+    var id = box.getAttribute("data-id");
+    if(box.checked){ state[id]=1; } else { delete state[id]; }
+    var card = document.querySelector('[data-card="'+id+'"]');
+    if(card) card.classList.toggle("done", box.checked);
+    save(); update();
+    var done = countModules()+countWeeks();
+    if(done===TOTAL){ ping("🎉 Program complete — go give a talk!"); }
+    else if(box.checked){ ping("Saved · "+Math.round(done/TOTAL*100)+"% complete"); }
+  });
+
+  document.getElementById("resetBtn").addEventListener("click", function(){
+    if(!confirm("Clear all your ticked modules and weeks? This can't be undone.")) return;
+    state={}; save();
+    document.querySelectorAll('input[data-id]').forEach(function(i){ i.checked=false; });
+    document.querySelectorAll('[data-card]').forEach(function(c){ c.classList.remove("done"); });
+    update(); ping("Progress reset");
+  });
+
+  // ---- theme ----
+  var TKEY="presenterDash.theme";
+  var tbtn=document.getElementById("themeBtn");
+  function applyTheme(t){ if(t){ document.documentElement.setAttribute("data-theme",t); } }
+  try{ applyTheme(localStorage.getItem(TKEY)); }catch(e){}
+  tbtn.addEventListener("click", function(){
+    var cur=document.documentElement.getAttribute("data-theme");
+    var isDark = cur ? cur==="dark" : window.matchMedia("(prefers-color-scheme: dark)").matches;
+    var next = isDark ? "light" : "dark";
+    applyTheme(next);
+    try{ localStorage.setItem(TKEY,next); }catch(e){}
+  });
+})();
+</script>
