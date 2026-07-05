@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>母语普通话 · Sound Like a Native — Cantonese → Mandarin Trainer</title>
+<style>
+  :root {
+    --bg: #0f1115;
+    --panel: #181b22;
+    --panel-2: #1f232c;
+    --border: #2a2f3a;
+    --text: #e8eaed;
+    --muted: #9aa3b2;
+    --accent: #e63946;
+    --accent-2: #ffb703;
+    --good: #2dd4a7;
+    --radius: 14px;
+    --shadow: 0 6px 24px rgba(0,0,0,.35);
+  }
+  @media (prefers-color-scheme: light) {
+    :root {
+      --bg: #f6f7f9;
+      --panel: #ffffff;
+      --panel-2: #f0f2f5;
+      --border: #e2e6ec;
+      --text: #1b1f27;
+      --muted: #5c6675;
+      --shadow: 0 6px 24px rgba(0,0,0,.08);
+    }
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC",
+      "Hiragino Sans GB", "Microsoft YaHei", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 980px; margin: 0 auto; padding: 24px 18px 80px; }
+
+  /* Header */
+  header.hero {
+    background: linear-gradient(135deg, var(--accent) 0%, #b5232f 100%);
+    color: #fff;
+    border-radius: var(--radius);
+    padding: 28px 26px;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
+  }
+  header.hero h1 { margin: 0 0 6px; font-size: clamp(1.5rem, 4vw, 2.2rem); letter-spacing: .5px; }
+  header.hero p { margin: 0; opacity: .92; font-size: .98rem; max-width: 640px; }
+  .badge-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 16px; }
+  .badge { background: rgba(255,255,255,.16); border: 1px solid rgba(255,255,255,.25);
+    padding: 4px 11px; border-radius: 999px; font-size: .8rem; }
+
+  /* Tabs */
+  nav.tabs { display: flex; gap: 6px; flex-wrap: wrap; margin: 22px 0 18px; }
+  nav.tabs button {
+    background: var(--panel); color: var(--muted); border: 1px solid var(--border);
+    padding: 9px 15px; border-radius: 999px; cursor: pointer; font-size: .9rem;
+    transition: .15s; font-weight: 500;
+  }
+  nav.tabs button:hover { color: var(--text); border-color: var(--accent); }
+  nav.tabs button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  section.tab { display: none; animation: fade .25s ease; }
+  section.tab.active { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(6px);} to {opacity:1; transform:none;} }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 20px 22px; margin-bottom: 16px;
+    box-shadow: var(--shadow);
+  }
+  .card h2 { margin: 0 0 4px; font-size: 1.15rem; }
+  .card h3 { margin: 18px 0 8px; font-size: 1rem; }
+  .card p.lead { color: var(--muted); margin: 4px 0 14px; }
+
+  /* Accent tells table */
+  table { width: 100%; border-collapse: collapse; font-size: .92rem; }
+  .table-scroll { overflow-x: auto; }
+  th, td { text-align: left; padding: 10px 12px; border-bottom: 1px solid var(--border); vertical-align: top; }
+  th { color: var(--muted); font-weight: 600; font-size: .82rem; text-transform: uppercase; letter-spacing: .4px; }
+  td .zh { font-size: 1.05rem; }
+  .pin { color: var(--accent-2); font-style: italic; }
+
+  /* Weekly routine */
+  .day { display: flex; align-items: flex-start; gap: 12px; padding: 12px;
+    border: 1px solid var(--border); border-radius: 10px; margin-bottom: 10px; background: var(--panel-2); }
+  .day .chk { flex: 0 0 auto; }
+  .day .chk input { width: 20px; height: 20px; accent-color: var(--good); cursor: pointer; }
+  .day .body { flex: 1; }
+  .day .dname { font-weight: 700; }
+  .day .focus { color: var(--accent-2); font-size: .85rem; }
+  .day .todo { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+  .day.done { opacity: .6; }
+  .day.done .dname { text-decoration: line-through; }
+
+  .streak-bar { display: flex; gap: 18px; flex-wrap: wrap; align-items: center;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 18px; margin-bottom: 16px; }
+  .streak-num { font-size: 2rem; font-weight: 800; color: var(--good); line-height: 1; }
+  .streak-label { color: var(--muted); font-size: .82rem; }
+  button.reset { background: transparent; color: var(--muted); border: 1px solid var(--border);
+    padding: 6px 12px; border-radius: 8px; cursor: pointer; font-size: .82rem; margin-left: auto; }
+  button.reset:hover { color: var(--accent); border-color: var(--accent); }
+
+  /* Resources */
+  .res-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px,1fr)); gap: 12px; }
+  a.res {
+    display: block; background: var(--panel-2); border: 1px solid var(--border);
+    border-radius: 12px; padding: 14px 16px; text-decoration: none; color: var(--text); transition: .15s;
+  }
+  a.res:hover { border-color: var(--accent); transform: translateY(-2px); }
+  a.res .rt { font-weight: 700; margin-bottom: 3px; display:flex; align-items:center; gap:7px; }
+  a.res .rd { color: var(--muted); font-size: .84rem; }
+  .tag { font-size: .68rem; background: var(--accent); color:#fff; padding: 2px 7px; border-radius: 999px; }
+  .tag.free { background: var(--good); }
+  .tag.yt { background: #ff0000; }
+
+  .searchline { font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+    background: var(--panel-2); border: 1px solid var(--border); border-radius: 8px;
+    padding: 8px 11px; margin: 6px 0; font-size: .88rem; display:flex; justify-content:space-between; gap:10px; align-items:center; }
+  .searchline .copy { cursor: pointer; color: var(--accent-2); font-size: .8rem; white-space: nowrap; }
+
+  /* Drills */
+  .pairs { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px,1fr)); gap: 10px; }
+  .pair { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px; text-align:center; }
+  .pair .zh { font-size: 1.25rem; }
+  .pair .pin { display:block; font-size:.85rem; margin-top:2px; }
+
+  /* Progress log */
+  textarea, input.txt {
+    width: 100%; background: var(--panel-2); border: 1px solid var(--border);
+    color: var(--text); border-radius: 10px; padding: 11px 13px; font: inherit; resize: vertical;
+  }
+  button.primary { background: var(--accent); color: #fff; border: none; padding: 10px 18px;
+    border-radius: 10px; cursor: pointer; font-weight: 600; margin-top: 10px; }
+  button.primary:hover { background: #c92e3a; }
+  .logentry { background: var(--panel-2); border: 1px solid var(--border); border-radius: 10px;
+    padding: 12px 14px; margin-top: 10px; }
+  .logentry .meta { color: var(--muted); font-size: .8rem; margin-bottom: 4px; }
+  .logentry button.del { float: right; background: none; border: none; color: var(--muted); cursor: pointer; }
+  .logentry button.del:hover { color: var(--accent); }
+
+  ul.clean { padding-left: 20px; }
+  ul.clean li { margin-bottom: 6px; }
+  .callout { border-left: 3px solid var(--accent-2); padding: 8px 14px; background: var(--panel-2);
+    border-radius: 0 8px 8px 0; margin: 12px 0; font-size: .92rem; }
+
+  /* Passages */
+  .passage { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 15px 17px; margin-bottom: 13px; }
+  .passage .ptitle { font-weight: 700; display: flex; justify-content: space-between;
+    align-items: baseline; gap: 10px; flex-wrap: wrap; }
+  .passage .ptarget { color: var(--accent-2); font-size: .8rem; font-weight: 600; }
+  .passage .ptext { font-size: 1.2rem; line-height: 2; margin: 10px 0 6px; }
+  .passage .ppin { color: var(--muted); font-size: .92rem; line-height: 1.85; margin-bottom: 6px; display: none; }
+  .passage.show-pin .ppin { display: block; }
+  .passage .pmeta { color: var(--muted); font-size: .8rem; margin-bottom: 8px; }
+  .passage .pactions { display: flex; gap: 9px; flex-wrap: wrap; }
+  .passage .pactions a, .passage .pactions button {
+    font-size: .82rem; padding: 6px 13px; border-radius: 8px; border: 1px solid var(--border);
+    background: var(--panel); color: var(--text); text-decoration: none; cursor: pointer; font: inherit; }
+  .passage .pactions a:hover, .passage .pactions button:hover { border-color: var(--accent); color: var(--accent); }
+
+  /* Recorder */
+  .recorder { background: var(--panel-2); border: 1px solid var(--border); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 14px; display: flex; flex-direction: column; gap: 10px; }
+  .rec-controls { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+  button.rec { background: var(--accent); color: #fff; border: none; padding: 9px 18px;
+    border-radius: 999px; cursor: pointer; font-weight: 600; }
+  button.rec.recording { background: #c92e3a; animation: pulse 1.2s infinite; }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .5; } }
+  .rec-time { font-variant-numeric: tabular-nums; color: var(--muted); font-size: .95rem; }
+  .rec-hint { color: var(--muted); font-size: .82rem; }
+  audio { width: 100%; margin-top: 4px; }
+  .logentry .audioSlot { margin-top: 8px; }
+  .logentry .dl { display: inline-block; font-size: .8rem; color: var(--accent-2);
+    text-decoration: none; margin: 4px 0; }
+  .logentry .dl:hover { text-decoration: underline; }
+  @media (prefers-reduced-motion: reduce) { *, ::before, ::after { animation-duration: .001ms !important; } }
+
+  footer { text-align: center; color: var(--muted); font-size: .82rem; margin-top: 30px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="hero">
+    <h1>母语普通话 · Sound Like a Native</h1>
+    <p>A personal training program for Cantonese speakers who already speak Mandarin — target the
+       specific accent tells (港普 / 广普), drill daily, and track your streak to native-level fluency.</p>
+    <div class="badge-row">
+      <span class="badge">🎯 7 accent targets</span>
+      <span class="badge">🗓️ 7-day routine</span>
+      <span class="badge">🔗 Curated resources</span>
+      <span class="badge">📈 Progress saved on your device</span>
+    </div>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="plan" class="active">📋 The Plan</button>
+    <button data-tab="tells">🎯 7 Accent Tells</button>
+    <button data-tab="routine">🗓️ Weekly Routine</button>
+    <button data-tab="drills">🗣️ Drills</button>
+    <button data-tab="passages">📖 朗读 Passages</button>
+    <button data-tab="resources">🔗 Resources</button>
+    <button data-tab="progress">📈 Progress Log</button>
+  </nav>
+
+  <!-- PLAN -->
+  <section class="tab active" id="plan">
+    <div class="card">
+      <h2>The 6-step method</h2>
+      <p class="lead">You don't need to learn Mandarin — you need to erase the Cantonese accent tells and add native polish.</p>
+      <ul class="clean">
+        <li><strong>Step 0 — Baseline.</strong> Record yourself reading a paragraph today. Re-record monthly to hear progress (use the Progress Log tab).</li>
+        <li><strong>Step 1 — Target accent.</strong> Aim for 标准普通话 (standard Putonghua), the target of the official 普通话水平测试 (PSC) exam — huge amount of free material.</li>
+        <li><strong>Step 2 — Build your library.</strong> See the Resources tab for YouTube searches, apps, and sites.</li>
+        <li><strong>Step 3 — Core method.</strong> Shadowing + Minimal pairs + Record-and-compare. These three do 90% of the work.</li>
+        <li><strong>Step 4 — Weekly routine.</strong> ~30–45 min/day, each day targeting one accent tell (Routine tab).</li>
+        <li><strong>Step 5 — Native flavor.</strong> Add fillers (就, 那个, 呗, 嘛), tone sandhi reflexes, and colloquialisms once your sounds are clean.</li>
+      </ul>
+      <div class="callout">
+        <strong>The core loop:</strong> Play a native clip → shadow it (speak simultaneously) →
+        record yourself → play both back-to-back → hear the gap → repeat. That feedback loop is what rewires muscle memory.
+      </div>
+    </div>
+  </section>
+
+  <!-- TELLS -->
+  <section class="tab" id="tells">
+    <div class="card">
+      <h2>The 7 accent tells to fix</h2>
+      <p class="lead">Fix these seven and you'll sound dramatically more native. Each has a dedicated day in the routine.</p>
+      <div class="table-scroll">
+      <table>
+        <thead><tr><th>#</th><th>Problem</th><th>Example</th><th>Why it happens</th></tr></thead>
+        <tbody>
+          <tr><td>1</td><td>Retroflex zh/ch/sh/r flattened to z/c/s</td><td><span class="zh">是</span> <span class="pin">shì → "si"</span>, <span class="zh">中</span> <span class="pin">zhōng → "zong"</span></td><td>Cantonese has no retroflex</td></tr>
+          <tr><td>2</td><td>n / l merge</td><td><span class="zh">南</span> <span class="pin">nán</span> vs <span class="zh">蓝</span> <span class="pin">lán</span></td><td>Common in Cantonese</td></tr>
+          <tr><td>3</td><td>-n vs -ng finals</td><td><span class="zh">身</span> <span class="pin">shēn</span> vs <span class="zh">生</span> <span class="pin">shēng</span></td><td>Finals map differently</td></tr>
+          <tr><td>4</td><td>ü (yu) rounding</td><td><span class="zh">女</span> <span class="pin">nǚ</span>, <span class="zh">绿</span> <span class="pin">lǜ</span></td><td>Vowel absent/weak</td></tr>
+          <tr><td>5</td><td>Tones + rhythm</td><td>4 tones + neutral vs Cantonese's 6</td><td>Different tone system</td></tr>
+          <tr><td>6</td><td>Neutral tone (轻声) dropped</td><td><span class="zh">谢谢</span> <span class="pin">xièxie</span>, <span class="zh">妈妈</span> <span class="pin">māma</span></td><td>Cantonese has no neutral tone</td></tr>
+          <tr><td>7</td><td>Erhua (儿化) missing</td><td><span class="zh">一会儿</span>, <span class="zh">哪儿</span>, <span class="zh">玩儿</span></td><td>The strongest "northern/native" marker</td></tr>
+        </tbody>
+      </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- ROUTINE -->
+  <section class="tab" id="routine">
+    <div class="streak-bar">
+      <div><div class="streak-num" id="streakNum">0</div><div class="streak-label">days completed this week</div></div>
+      <div><div class="streak-num" id="totalNum">0</div><div class="streak-label">total sessions logged</div></div>
+      <button class="reset" id="resetWeek">Reset week</button>
+    </div>
+    <div class="card">
+      <h2>Weekly routine · ~30–45 min/day</h2>
+      <p class="lead">Check off each day as you complete it. Progress is saved automatically on this device.</p>
+      <div id="days"></div>
+      <div class="callout">Every 4 weeks: re-record your baseline paragraph (Progress Log) and compare against the last one. That's your true progress meter.</div>
+    </div>
+  </section>
+
+  <!-- DRILLS -->
+  <section class="tab" id="drills">
+    <div class="card">
+      <h2>Minimal-pair drills</h2>
+      <p class="lead">Say each pair aloud, then verify against Forvo. Confusing these is the #1 giveaway.</p>
+      <h3>Retroflex vs flat (平翘舌)</h3>
+      <div class="pairs" id="p1"></div>
+      <h3>n / l</h3>
+      <div class="pairs" id="p2"></div>
+      <h3>-n vs -ng (前后鼻音)</h3>
+      <div class="pairs" id="p3"></div>
+      <h3>Neutral tone &amp; erhua targets</h3>
+      <div class="pairs" id="p4"></div>
+      <div class="callout"><strong>Tone sandhi reflexes to internalize:</strong> 不 bù→bú before 4th tone (不是 búshì) · 一 yī→yì/yí · 3rd+3rd→2nd+3rd (你好 ní hǎo).</div>
+    </div>
+  </section>
+
+  <!-- PASSAGES -->
+  <section class="tab" id="passages">
+    <div class="card">
+      <h2>朗读 · Shadowing passages</h2>
+      <p class="lead">Play a native reading, then speak <em>along with it</em> — match tone, speed, and rhythm. Toggle pinyin when you need it.</p>
+      <div class="callout"><strong>How to shadow:</strong> ① Listen once. ② Play again and speak simultaneously, copying the melody. ③ Record yourself (Progress Log tab) and compare. Repeat until the gap closes.</div>
+    </div>
+    <div class="card">
+      <h2>绕口令 · Tongue twisters (targeted sounds)</h2>
+      <p class="lead">Short, public-domain drills — each one attacks a specific accent tell. Tap “Pinyin” to reveal, “Hear it” to find a native reading.</p>
+      <div id="twisters"></div>
+    </div>
+    <div class="card">
+      <h2>朗读篇章 · Classic recitation passages</h2>
+      <p class="lead">Public-domain essays used in Chinese recitation, for rhythm and flow. The full official PSC set of 60 is linked in Resources → “PSC passages”.</p>
+      <div id="essays"></div>
+    </div>
+  </section>
+
+  <!-- RESOURCES -->
+  <section class="tab" id="resources">
+    <div class="card">
+      <h2>YouTube — search these terms</h2>
+      <p class="lead">Tap “copy” then paste into YouTube search, or click to open results directly.</p>
+      <div id="ytSearches"></div>
+    </div>
+    <div class="card">
+      <h2>Channels &amp; shadowing sources</h2>
+      <div class="res-grid" id="channels"></div>
+    </div>
+    <div class="card">
+      <h2>Apps &amp; sites</h2>
+      <div class="res-grid" id="sites"></div>
+    </div>
+  </section>
+
+  <!-- PROGRESS -->
+  <section class="tab" id="progress">
+    <div class="card">
+      <h2>Progress log</h2>
+      <p class="lead">Record a monthly baseline — read the same passage aloud, keep the clip, and compare month to month. Everything stays on this device (audio in your browser, nothing uploaded).</p>
+      <div class="recorder">
+        <div class="rec-controls">
+          <button class="rec" id="recBtn">● Record baseline</button>
+          <span class="rec-time" id="recTime">0:00</span>
+        </div>
+        <div class="rec-hint" id="recHint">Read a passage aloud (try the 朗读 tab). Your clip attaches to the entry you save below.</div>
+        <div id="recPreview"></div>
+      </div>
+      <input class="txt" id="logTitle" placeholder="Title (e.g. Baseline — Month 1)" style="margin-bottom:10px;">
+      <textarea id="logBody" rows="3" placeholder="How did it sound? Which tells improved (retroflex, tones, erhua…)?"></textarea>
+      <button class="primary" id="addLog">Save entry</button>
+      <div id="logList"></div>
+    </div>
+  </section>
+
+  <footer>
+    Built as a personal study tool · All progress is stored locally in your browser (nothing is uploaded).<br>
+    Tip: host free on GitHub Pages, or just open this file in any browser.
+  </footer>
+</div>
+
+<script>
+/* ---------- Tabs ---------- */
+document.getElementById('tabs').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  document.querySelectorAll('#tabs button').forEach(x => x.classList.remove('active'));
+  document.querySelectorAll('section.tab').forEach(x => x.classList.remove('active'));
+  b.classList.add('active');
+  document.getElementById(b.dataset.tab).classList.add('active');
+});
+
+/* ---------- Weekly routine ---------- */
+const DAYS = [
+  { d:'Mon', f:'Retroflex (zh/ch/sh/r)', t:'Minimal-pair drills + 1 绕口令 (tongue twister)' },
+  { d:'Tue', f:'-n/-ng + n/l', t:'Minimal pairs + Forvo checks' },
+  { d:'Wed', f:'Tones & rhythm', t:'Shadow 1 PSC passage, record & compare' },
+  { d:'Thu', f:'Neutral tone + erhua', t:'Drill 谢谢/妈妈/哪儿/玩儿, shadow a casual clip' },
+  { d:'Fri', f:'ü + weak spots', t:'Review the week’s worst sound' },
+  { d:'Sat', f:'Live practice', t:'30 min italki tutor OR HelloTalk voice call' },
+  { d:'Sun', f:'Free speaking', t:'Record a 2-min monologue, no notes' },
+];
+const store = {
+  get(k, def){ try { return JSON.parse(localStorage.getItem(k)) ?? def; } catch { return def; } },
+  set(k, v){ localStorage.setItem(k, JSON.stringify(v)); }
+};
+function renderDays(){
+  const done = store.get('week', {});
+  const total = store.get('total', 0);
+  const box = document.getElementById('days'); box.innerHTML = '';
+  DAYS.forEach((day, i) => {
+    const el = document.createElement('div');
+    el.className = 'day' + (done[i] ? ' done' : '');
+    el.innerHTML = `<label class="chk"><input type="checkbox" ${done[i]?'checked':''} data-i="${i}"></label>
+      <div class="body"><div class="dname">${day.d}</div>
+      <div class="focus">${day.f}</div><div class="todo">${day.t}</div></div>`;
+    box.appendChild(el);
+  });
+  document.getElementById('streakNum').textContent = Object.values(done).filter(Boolean).length;
+  document.getElementById('totalNum').textContent = total;
+}
+document.getElementById('days').addEventListener('change', e => {
+  const cb = e.target; if (cb.type !== 'checkbox') return;
+  const done = store.get('week', {}); const i = cb.dataset.i;
+  let total = store.get('total', 0);
+  if (cb.checked && !done[i]) total++;
+  if (!cb.checked && done[i]) total = Math.max(0, total - 1);
+  done[i] = cb.checked; store.set('week', done); store.set('total', total);
+  renderDays();
+});
+document.getElementById('resetWeek').addEventListener('click', () => {
+  store.set('week', {}); renderDays();
+});
+
+/* ---------- Drills ---------- */
+const PAIRS = {
+  p1: [['四/十','sì / shí'],['知/资','zhī / zī'],['真/怎','zhēn / zěn'],['吃/词','chī / cí'],['山/三','shān / sān'],['日/日','rì (retroflex r)']],
+  p2: [['你/李','nǐ / lǐ'],['南/蓝','nán / lán'],['牛/流','niú / liú'],['怒/路','nù / lù'],['娘/凉','niáng / liáng'],['奶/来','nǎi / lái']],
+  p3: [['身/生','shēn / shēng'],['音/英','yīn / yīng'],['心/星','xīn / xīng'],['陈/成','chén / chéng'],['金/京','jīn / jīng'],['民/明','mín / míng']],
+  p4: [['谢谢','xièxie'],['妈妈','māma'],['东西','dōngxi'],['哪儿','nǎr'],['一会儿','yíhuìr'],['玩儿','wánr']],
+};
+Object.entries(PAIRS).forEach(([id, arr]) => {
+  const box = document.getElementById(id);
+  arr.forEach(([zh, pin]) => {
+    const el = document.createElement('div'); el.className = 'pair';
+    el.innerHTML = `<span class="zh">${zh}</span><span class="pin">${pin}</span>`;
+    box.appendChild(el);
+  });
+});
+
+/* ---------- Passages ---------- */
+const TWISTERS = [
+  { t:'平翘舌 · z/c/s vs zh/ch/sh',
+    zh:'四是四，十是十，十四是十四，四十是四十，四十四是四十四。',
+    pin:'sì shì sì, shí shì shí, shísì shì shísì, sìshí shì sìshí, sìshísì shì sìshísì.',
+    q:'四是四十是十 绕口令' },
+  { t:'翘舌 · zh / sh / r',
+    zh:'知道就说知道，不知道就说不知道，不要知道说不知道，也不要不知道说知道。',
+    pin:'zhīdào jiù shuō zhīdào, bù zhīdào jiù shuō bù zhīdào, búyào zhīdào shuō bù zhīdào, yě búyào bù zhīdào shuō zhīdào.',
+    q:'知道就说知道 绕口令' },
+  { t:'n / l',
+    zh:'刘奶奶买牛奶，牛奶奶卖牛奶，刘奶奶找牛奶奶买牛奶。',
+    pin:'liú nǎinai mǎi niúnǎi, niú nǎinai mài niúnǎi, liú nǎinai zhǎo niú nǎinai mǎi niúnǎi.',
+    q:'刘奶奶买牛奶 绕口令' },
+  { t:'前后鼻音 · -n / -ng',
+    zh:'红凤凰，黄凤凰，粉红凤凰花凤凰。',
+    pin:'hóng fènghuáng, huáng fènghuáng, fěnhóng fènghuáng huā fènghuáng.',
+    q:'红凤凰黄凤凰 绕口令' },
+];
+const ESSAYS = [
+  { title:'《匆匆》 — 朱自清',
+    meta:'1922 · public domain · a classic recitation piece on the passing of time',
+    zh:'燕子去了，有再来的时候；杨柳枯了，有再青的时候；桃花谢了，有再开的时候。但是，聪明的，你告诉我，我们的日子为什么一去不复返呢？',
+    q:'朱自清 匆匆 朗读' },
+  { title:'《春》 — 朱自清',
+    meta:'1933 · public domain · gentle, even rhythm — great for tone flow',
+    zh:'盼望着，盼望着，东风来了，春天的脚步近了。一切都像刚睡醒的样子，欣欣然张开了眼。山朗润起来了，水涨起来了，太阳的脸红起来了。',
+    q:'朱自清 春 朗读' },
+];
+function ytUrl(q){ return 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q); }
+const twBox = document.getElementById('twisters');
+TWISTERS.forEach(x => {
+  const el = document.createElement('div'); el.className = 'passage';
+  el.innerHTML = `<div class="ptitle"><span>绕口令</span><span class="ptarget">${x.t}</span></div>
+    <div class="ptext">${x.zh}</div>
+    <div class="ppin">${x.pin}</div>
+    <div class="pactions">
+      <button class="togpin">Pinyin</button>
+      <a href="${ytUrl(x.q)}" target="_blank" rel="noopener">▶ Hear it</a>
+    </div>`;
+  twBox.appendChild(el);
+});
+twBox.addEventListener('click', e => {
+  if (!e.target.classList.contains('togpin')) return;
+  const p = e.target.closest('.passage'); p.classList.toggle('show-pin');
+  e.target.textContent = p.classList.contains('show-pin') ? 'Hide pinyin' : 'Pinyin';
+});
+const esBox = document.getElementById('essays');
+ESSAYS.forEach(x => {
+  const el = document.createElement('div'); el.className = 'passage';
+  el.innerHTML = `<div class="ptitle"><span>${x.title}</span></div>
+    <div class="pmeta">${x.meta}</div>
+    <div class="ptext">${x.zh}</div>
+    <div class="pactions">
+      <a href="${ytUrl(x.q)}" target="_blank" rel="noopener">▶ Hear it read</a>
+      <a href="https://www.plecoapp.com/" target="_blank" rel="noopener">Pinyin in Pleco</a>
+    </div>`;
+  esBox.appendChild(el);
+});
+
+/* ---------- Resources ---------- */
+const YT = [
+  '普通话水平测试 朗读作品 60篇',
+  '平翘舌 训练 普通话',
+  '前后鼻音 训练',
+  '绕口令 普通话',
+  '新闻联播',
+  '广东人 普通话 纠音',
+];
+const ytBox = document.getElementById('ytSearches');
+YT.forEach(q => {
+  const url = 'https://www.youtube.com/results?search_query=' + encodeURIComponent(q);
+  const el = document.createElement('div'); el.className = 'searchline';
+  el.innerHTML = `<a href="${url}" target="_blank" rel="noopener" style="color:inherit;text-decoration:none;flex:1;">▶ ${q}</a>
+                  <span class="copy" data-q="${q}">copy</span>`;
+  ytBox.appendChild(el);
+});
+ytBox.addEventListener('click', e => {
+  if (!e.target.classList.contains('copy')) return;
+  navigator.clipboard?.writeText(e.target.dataset.q);
+  const o = e.target.textContent; e.target.textContent = 'copied ✓';
+  setTimeout(() => e.target.textContent = o, 1200);
+});
+
+const CHANNELS = [
+  ['Mandarin Corner','https://www.youtube.com/@MandarinCorner','yt','Slow, clear real-life dialogue with subtitles — ideal shadowing.'],
+  ['Speak Chinese with Da Peng','https://www.youtube.com/@SpeakChinesewithDaPeng','yt','Natural spoken Mandarin & pronunciation breakdowns.'],
+  ['Comprehensible Chinese','https://www.youtube.com/@ComprehensibleChinese','yt','Graded listening to build native rhythm.'],
+  ['CCTV 新闻联播','https://www.youtube.com/results?search_query=新闻联播','yt','The cleanest standard Putonghua for advanced shadowing.'],
+];
+const chBox = document.getElementById('channels');
+CHANNELS.forEach(([t,u,tag,d]) => {
+  const a = document.createElement('a'); a.className='res'; a.href=u; a.target='_blank'; a.rel='noopener';
+  a.innerHTML = `<div class="rt">${t} <span class="tag yt">YouTube</span></div><div class="rd">${d}</div>`;
+  chBox.appendChild(a);
+});
+
+const SITES = [
+  ['Forvo','https://forvo.com/languages/zh/','free','Hear any word pronounced by natives — check your minimal pairs.'],
+  ['Speechling','https://www.speechling.com/','free','Record yourself, get feedback from real coaches. Generous free tier.'],
+  ['italki','https://www.italki.com/','paid','1-on-1 tutors. Book a northern PSC-trained native: “I’m Cantonese, fix my accent.”'],
+  ['HelloTalk','https://www.hellotalk.com/','free','Free voice exchange with native speakers.'],
+  ['Tandem','https://www.tandem.net/','free','Language-exchange calls with natives.'],
+  ['Pleco','https://www.pleco.com/','free','The essential Chinese dictionary with native audio.'],
+  ['Du Chinese','https://www.duchinese.net/','free','Graded reading with native audio narration.'],
+  ['The Chairman’s Bao','https://www.thechairmansbao.com/','paid','News-based graded reading with audio.'],
+  ['PSC passages (PDF)','https://www.google.com/search?q=普通话水平测试+朗读作品+60篇+PDF','free','The 60 official reading passages — your core shadowing material.'],
+  ['Anki','https://apps.ankiweb.net/','free','Spaced-repetition audio cards for your problem words.'],
+];
+const siteBox = document.getElementById('sites');
+SITES.forEach(([t,u,tag,d]) => {
+  const a = document.createElement('a'); a.className='res'; a.href=u; a.target='_blank'; a.rel='noopener';
+  const label = tag==='free' ? '<span class="tag free">Free</span>' : '<span class="tag">Paid</span>';
+  a.innerHTML = `<div class="rt">${t} ${label}</div><div class="rd">${d}</div>`;
+  siteBox.appendChild(a);
+});
+
+/* ---------- Progress log + audio (IndexedDB) ---------- */
+function escapeHtml(s){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+
+const DB = (() => {
+  let dbp;
+  function open(){
+    if (dbp) return dbp;
+    dbp = new Promise((res, rej) => {
+      const r = indexedDB.open('mandarin-trainer', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('audio');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+    return dbp;
+  }
+  const tx = (mode, fn) => open().then(db => new Promise((res, rej) => {
+    const t = db.transaction('audio', mode); const store = t.objectStore('audio');
+    const rq = fn(store); t.oncomplete = () => res(rq && rq.result); t.onerror = () => rej(t.error);
+  }));
+  return {
+    put: (k, blob) => tx('readwrite', s => s.put(blob, k)),
+    get: (k) => tx('readonly', s => s.get(k)),
+    del: (k) => tx('readwrite', s => s.delete(k)),
+  };
+})();
+
+/* Recorder */
+const REC_HINT = 'Read a passage aloud (try the 朗读 tab). Your clip attaches to the entry you save below.';
+const recBtn = document.getElementById('recBtn');
+const recTime = document.getElementById('recTime');
+const recHint = document.getElementById('recHint');
+const recPreview = document.getElementById('recPreview');
+let mediaRecorder = null, chunks = [], recTimer = null, recStart = 0, pendingBlob = null;
+
+function fmt(s){ return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`; }
+
+recBtn.addEventListener('click', async () => {
+  if (mediaRecorder && mediaRecorder.state === 'recording') { mediaRecorder.stop(); return; }
+  if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+    recHint.textContent = 'Recording isn’t supported in this browser. Try Chrome, Edge, or Safari.'; return;
+  }
+  let stream;
+  try { stream = await navigator.mediaDevices.getUserMedia({ audio: true }); }
+  catch { recHint.textContent = 'Microphone blocked. Allow mic access in your browser to record.'; return; }
+  chunks = []; mediaRecorder = new MediaRecorder(stream);
+  mediaRecorder.ondataavailable = e => { if (e.data.size) chunks.push(e.data); };
+  mediaRecorder.onstop = () => {
+    stream.getTracks().forEach(t => t.stop());
+    clearInterval(recTimer);
+    recBtn.classList.remove('recording'); recBtn.textContent = '● Record baseline';
+    pendingBlob = new Blob(chunks, { type: mediaRecorder.mimeType || 'audio/webm' });
+    recPreview.innerHTML = '';
+    const a = document.createElement('audio'); a.controls = true; a.src = URL.createObjectURL(pendingBlob);
+    recPreview.appendChild(a);
+    recHint.textContent = 'Recorded ✓ — save an entry below to keep it, or record again to replace.';
+  };
+  mediaRecorder.start();
+  recStart = performance.now();
+  recBtn.classList.add('recording'); recBtn.textContent = '■ Stop';
+  recTime.textContent = '0:00';
+  recTimer = setInterval(() => { recTime.textContent = fmt(Math.floor((performance.now() - recStart) / 1000)); }, 250);
+});
+
+function renderLog(){
+  const list = store.get('log', []);
+  const box = document.getElementById('logList'); box.innerHTML = '';
+  list.forEach((entry, i) => {
+    const el = document.createElement('div'); el.className = 'logentry';
+    el.innerHTML = `<button class="del" data-i="${i}">✕</button>
+      <div class="meta">${escapeHtml(entry.date)}</div>
+      <strong>${escapeHtml(entry.title || '(untitled)')}</strong>
+      <div>${escapeHtml(entry.body || '')}</div>
+      <div class="audioSlot"></div>`;
+    box.appendChild(el);
+    if (entry.audioId) {
+      DB.get(entry.audioId).then(blob => {
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const slot = el.querySelector('.audioSlot');
+        slot.innerHTML = `<a class="dl" href="${url}" download="baseline-${entry.audioId}.webm">⬇ Download recording</a>`;
+        const a = document.createElement('audio'); a.controls = true; a.src = url;
+        slot.appendChild(a);
+      }).catch(() => {});
+    }
+  });
+}
+
+document.getElementById('addLog').addEventListener('click', async () => {
+  const title = document.getElementById('logTitle').value.trim();
+  const body = document.getElementById('logBody').value.trim();
+  if (!title && !body && !pendingBlob) return;
+  const entry = { title, body, date: new Date().toLocaleDateString() };
+  if (pendingBlob) {
+    const id = 'a' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+    try { await DB.put(id, pendingBlob); entry.audioId = id; }
+    catch { recHint.textContent = 'Could not save the audio, but your notes were kept.'; }
+  }
+  const list = store.get('log', []); list.unshift(entry); store.set('log', list);
+  document.getElementById('logTitle').value = ''; document.getElementById('logBody').value = '';
+  pendingBlob = null; recPreview.innerHTML = ''; recTime.textContent = '0:00'; recHint.textContent = REC_HINT;
+  renderLog();
+});
+
+document.getElementById('logList').addEventListener('click', async e => {
+  if (!e.target.classList.contains('del')) return;
+  const list = store.get('log', []);
+  const [removed] = list.splice(+e.target.dataset.i, 1);
+  store.set('log', list);
+  if (removed && removed.audioId) { try { await DB.del(removed.audioId); } catch {} }
+  renderLog();
+});
+
+/* ---------- init ---------- */
+renderDays(); renderLog();
+</script>
+</body>
+</html>
